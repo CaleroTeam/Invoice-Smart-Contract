@@ -261,7 +261,7 @@ contract Invoice {
     function getState() public constant returns (uint8) {
         return invoice.state;
     }
-    
+
     // Get history
     function getOfferExpiresDateHistory(address _company) public constant returns (uint) {
         return invoice.settlements[_company].offerExpiresDate;
@@ -273,5 +273,15 @@ contract Invoice {
 
     function getPaidHistory(address _company) public constant returns (uint) {
         return invoice.settlements[_company].paid;
+    }
+
+    // List of invoice all owners
+    function listOwners() public constant returns (address[]) {
+        return invoice.owners;
+    }
+
+    // Mark invoice as finished
+    function markAsFinished() private {
+        invoice.state = 1;
     }
 }
