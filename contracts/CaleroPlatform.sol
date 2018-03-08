@@ -29,7 +29,7 @@ contract CaleroPlatform is Ownable {
     function listInvoices() public constant returns (address[]) {
         return invoicesList;
     }
-    
+
     // Create new company
     function createCompany(bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public returns (address) {
         address company = new Company(msg.sender, address(this), country, name, addressStreet, city, postalCode);
@@ -43,5 +43,20 @@ contract CaleroPlatform is Ownable {
     // List of all registered companies
     function listCompanies() public constant returns (address[]) {
         return companiesList;
+    }
+    
+    // Create new Seller
+    function createSellers(bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public returns (address) {
+        address investor = new Seller(msg.sender, address(this), country, name, addressStreet, city, postalCode);
+        investors[investor] = true;
+        investorsList.push(investor);
+
+        SellerRegistered(investor);
+        return investor;
+    }
+
+    // List of all registered investors
+    function listSellers() public constant returns (address[]) {
+        return investorsList;
     }
 }
