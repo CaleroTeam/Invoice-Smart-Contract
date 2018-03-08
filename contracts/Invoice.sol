@@ -284,4 +284,11 @@ contract Invoice {
     function markAsFinished() private {
         invoice.state = 1;
     }
+    
+    /*
+    * @dev  kill the contract functionality
+    */
+    function kill(address owner) public onlyOwner(owner) {
+        selfdestruct(owner);
+    }
 }
