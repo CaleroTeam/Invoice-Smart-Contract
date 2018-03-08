@@ -18,4 +18,19 @@ contract Company is Operations {
         mapping (address => bool) users;
         address[] usersList;
     }
+
+    CompanyStruct company;
+
+    // Constructor
+    function Company(address owner, address CaleroMain, bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public {
+        company.users[owner] = true;
+        company.usersList.push(owner);
+        company.CaleroMain = CaleroMain;
+        company.country = country;
+        company.name = name;
+        company.addressStreet = addressStreet;
+        company.city = city;
+        company.postalCode = postalCode;
+    }
+
 }
