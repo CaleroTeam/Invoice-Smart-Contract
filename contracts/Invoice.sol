@@ -44,4 +44,41 @@ contract Invoice {
 
         mapping (address => SettlementStruct) settlements;
     }
+
+    // Constructor
+    function Invoice(
+        address _seller,
+        address _payer,
+        uint _invoiceId,
+        uint _payDueDate,
+        string _item,
+        uint _quantity,
+        uint _pricePerUnit,
+        uint _amountForPay,
+        string _currency,
+        string _itemDescription,
+        string _messageToRecipient,
+        address CaleroMain) public
+    {
+        invoice.owner = _seller;
+        invoice.owners.push(_seller);
+        invoice.payer = _payer;
+        invoice.invoiceId = _invoiceId;
+        invoice.issueDate = now;
+        invoice.payDueDate = _payDueDate;
+
+        invoice.item = _item;
+        invoice.quantity = _quantity;
+        invoice.pricePerUnit = _pricePerUnit;
+        invoice.itemDescription = _itemDescription;
+        invoice.amountForPay = _amountForPay;
+        invoice.currency = _currency;
+
+        invoice.messageToRecipient = _messageToRecipient;
+
+        invoice.state = 0;
+        invoice.CaleroMain = CaleroMain;
+    }
+
+    InvoiceStruct invoice;
 }
