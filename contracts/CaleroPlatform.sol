@@ -1,6 +1,8 @@
 pragma solidity ^0.4.18;
 
 import "./Ownable.sol";
+import "./Company.sol";
+import "./Seller.sol";
 
 contract CaleroPlatform is Ownable {
     uint nextInvoiceId = 0;

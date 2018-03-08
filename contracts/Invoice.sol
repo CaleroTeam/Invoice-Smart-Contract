@@ -1,6 +1,10 @@
 pragma solidity ^0.4.18;
 
-import "./SafeMath.sol";
+import "./CaleroPlatform.sol";
+import "./SafeMathLib.sol";
+import "./Company.sol";
+import "./Seller.sol";
+
 
 contract Invoice {
     using SafeMath for uint;
