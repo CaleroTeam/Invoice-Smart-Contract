@@ -97,7 +97,7 @@ contract Invoice {
     event AmountForTransferChanged(uint oldValue, uint newValue);
     event CurrencyChanged(string oldValue, string newValue);
     event MessageToRecipientChanged(string oldValue, string newValue);
-    
+
     // Modifiers
     modifier onlyBuyer(address payer) {
         require(payer == invoice.payer && msg.sender == invoice.payer);
@@ -149,4 +149,64 @@ contract Invoice {
         /// Trigger the event
         CommentSent(payer, message);
     }
+
+    // Setter
+    function changeOwner(address owner, address newOwner) public onlyOwner(owner) {
+        if (invoice.owner != newOwner) {
+            invoice.owners.push(newOwner);
+        }
+        invoice.owner = newOwner;
+        OwnerChanged(owner, newOwner);
+    }
+
+    function setCustomer(address owner, address payer) public onPending onlyOwner(owner) {
+        CostumerChanged(invoice.payer, payer);
+        invoice.payer = payer;
+    }
+
+    function setInvoiceId(address owner, uint invoiceId) public onPending onlyOwner(owner) {
+        InvoiceIdChanged(invoice.invoiceId, invoiceId);
+        invoice.invoiceId = invoiceId;
+    }
+
+    function setPayDueDate(address owner, uint payDueDate) public onPending onlyOwner(owner) {
+        PayDueDateChanged(invoice.payDueDate, payDueDate);
+        invoice.payDueDate = payDueDate;
+    }
+
+    function setItem(address owner, string item) public onPending onlyOwner(owner) {
+        ItemChanged(invoice.item, item);
+        invoice.item = item;
+    }
+
+    function setQuantity(address owner, uint quantity) public onPending onlyOwner(owner) {
+        QuantityChanged(invoice.quantity, quantity);
+        invoice.quantity = quantity;
+    }
+
+    function setPricePerUnit(address owner, uint pricePerUnit) public onPending onlyOwner(owner) {
+        PricePerUnitChanged(invoice.pricePerUnit, pricePerUnit);
+        invoice.pricePerUnit = pricePerUnit;
+    }
+
+    function setItemDescription(address owner, string itemDescription) public onPending onlyOwner(owner) {
+        ItemDescriptionChanged(invoice.itemDescription, itemDescription);
+        invoice.itemDescription = itemDescription;
+    }
+
+    function setAmount(address owner, uint amount) public onPending onlyOwner(owner) {
+        AmountForTransferChanged(invoice.amountForPay, amount);
+        invoice.amountForPay = amount;
+    }
+
+    function setCurrency(address owner, string currency) public onPending onlyOwner(owner) {
+        CurrencyChanged(invoice.currency, currency);
+        invoice.currency = currency;
+    }
+
+    function setMessageToRecipient(address owner, string messageToRecipient) public onPending onlyOwner(owner) {
+        MessageToRecipientChanged(invoice.messageToRecipient, messageToRecipient);
+        invoice.messageToRecipient = messageToRecipient;
+    }
+
 }
