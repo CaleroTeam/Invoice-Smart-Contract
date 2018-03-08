@@ -2,7 +2,8 @@ pragma solidity ^0.4.18;
 
 import "./Operations.sol";
 
-contract Seller {
+contract Seller is Operations {
+
     struct SellerStruct {
         address CaleroMain;
 
@@ -18,18 +19,71 @@ contract Seller {
         address[] usersList;
     }
 
-    SellerStruct investor;
+    SellerStruct seller;
 
     // Constructor
     function Seller(address owner, address CaleroMain, bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public {
-        investor.users[owner] = true;
-        investor.usersList.push(owner);
-        investor.CaleroMain = CaleroMain;
-        investor.country = country;
-        investor.name = name;
-        investor.addressStreet = addressStreet;
-        investor.city = city;
-        investor.postalCode = postalCode;
+        seller.users[owner] = true;
+        seller.usersList.push(owner);
+        seller.CaleroMain = CaleroMain;
+        seller.country = country;
+        seller.name = name;
+        seller.addressStreet = addressStreet;
+        seller.city = city;
+        seller.postalCode = postalCode;
+    }
+
+    struct InvoiceDetails {
+        address seller;
+        address payer;
+        uint invoiceId;
+        uint payDueDate;
+        string item;
+        uint quantity;
+        uint pricePerUnit;
+        uint amountForPay;
+        string currency;
+        string itemDescription;
+        string messageToRecipient;
+    }
+
+    // Create new Invoice for company
+    function createInvoice(
+        address _payer,
+        uint _invoiceId,
+        uint _payDueDate,
+        string _item,
+        uint _quantity,
+        uint _pricePerUnit,
+        uint _amountForPay,
+        string _currency,
+        string _itemDescription,
+        string _messageToRecipient)
+    public onlyOwner {
+        InvoiceDetails memory invoiceDetails;
+
+        invoiceDetails.seller = address(this);
+        invoiceDetails.payer = _payer;
+        invoiceDetails.invoiceId = _invoiceId;
+        invoiceDetails.payDueDate = _payDueDate;
+        invoiceDetails.item = _item;
+        invoiceDetails.quantity = _quantity;
+        invoiceDetails.pricePerUnit = _pricePerUnit;
+        invoiceDetails.amountForPay = _amountForPay;
+        invoiceDetails.currency = _currency;
+        invoiceDetails.itemDescription = _itemDescription;
+        invoiceDetails.messageToRecipient = _messageToRecipient;
+
+        createInvoiceCall(invoiceDetails);
+    }
+
+    function createInvoiceCall(InvoiceDetails invoiceDetails) private returns (address) {
+        address invoice = new Invoice(invoiceDetails.seller, invoiceDetails.payer, invoiceDetails.invoiceId, invoiceDetails.payDueDate, invoiceDetails.item, invoiceDetails.quantity, invoiceDetails.pricePerUnit, invoiceDetails.amountForPay, invoiceDetails.currency, invoiceDetails.itemDescription, invoiceDetails.messageToRecipient, seller.CaleroMain);
+
+        CaleroPlatform calero = CaleroPlatform(seller.CaleroMain);
+        calero.addInvoice(invoice);
+
+        return invoice;
     }
 
     // Modifiers
@@ -40,74 +94,74 @@ contract Seller {
 
     // Add new owner to Seller
     function addOwner(address user) public onlyOwner {
-        investor.users[user] = true;
-        investor.usersList.push(user);
+        seller.users[user] = true;
+        seller.usersList.push(user);
     }
 
     // Remove existing owner from Seller
     function removeOwner(address user) public onlyOwner {
-        investor.users[user] = false;
-        investor.usersList = removeItem(investor.usersList, user);
+        seller.users[user] = false;
+        seller.usersList = removeItem(seller.usersList, user);
     }
 
     // Check if address is owner
     function isOwner(address user) public constant returns (bool) {
-        return investor.users[user];
+        return seller.users[user];
     }
 
-    // List of investor all owners
+    // List of seller all owners
     function listOwners() public constant returns(address[]) {
-        return investor.usersList;
+        return seller.usersList;
     }
 
-    // Sets investor country
+    // Sets seller country
     function setCountry(bytes32 country) public onlyOwner {
-        investor.country = country;
+        seller.country = country;
     }
 
-    // Sets investor name
+    // Sets seller name
     function setName(bytes32 name) public onlyOwner {
-        investor.name = name;
+        seller.name = name;
     }
 
-    // Sets investor addressStreet
+    // Sets seller addressStreet
     function setAddressStreet(bytes32 addressStreet) public onlyOwner {
-        investor.addressStreet = addressStreet;
+        seller.addressStreet = addressStreet;
     }
 
-    // Sets investor city
+    // Sets seller city
     function setCity(bytes32 city) public onlyOwner {
-        investor.city = city;
+        seller.city = city;
     }
 
-    // Sets investor postalCode
+    // Sets seller postalCode
     function setPostalCode(bytes32 postalCode) public onlyOwner {
-        investor.postalCode = postalCode;
+        seller.postalCode = postalCode;
     }
 
-    // Returns investor country
+    // Returns seller country
     function getCountry() public constant returns (bytes32) {
-        return investor.country;
+        return seller.country;
     }
 
-    // Returns investor name
+    // Returns seller name
     function getName() public constant returns (bytes32) {
-        return investor.name;
+        return seller.name;
     }
 
-    // Returns investor address1
+    // Returns seller address1
     function getAddressStreet() public constant returns (bytes32) {
-        return investor.addressStreet;
+        return seller.addressStreet;
     }
 
-    // Returns investor city
+    // Returns seller city
     function getCity() public constant returns (bytes32) {
-        return investor.city;
+        return seller.city;
     }
 
-    // Returns investor postalCode
+    // Returns seller postalCode
     function getPostalCode() public constant returns (bytes32) {
-        return investor.postalCode;
+        return seller.postalCode;
     }
 
     /*
