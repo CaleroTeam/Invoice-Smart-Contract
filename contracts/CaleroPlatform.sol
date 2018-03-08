@@ -17,4 +17,16 @@ contract CaleroPlatform is Ownable {
     event InvoiceCreated(address invoice);
     event CompanyRegistered(address company);
     event SellerRegistered(address investor);
+    
+    // Add invoice to platform Invoices list
+    function addInvoice(address invoice) public {
+        invoices[invoice] = true;
+        invoicesList.push(invoice);
+        InvoiceCreated(invoice); // event
+    }
+
+    // List all invoices
+    function listInvoices() public constant returns (address[]) {
+        return invoicesList;
+    }
 }
