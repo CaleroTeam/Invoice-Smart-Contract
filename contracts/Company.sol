@@ -56,4 +56,33 @@ contract Company is Operations {
         return company.users[user];
     }
 
+    // List of company all owners
+    function listOwners() public constant returns(address[]) {
+        return company.usersList;
+    }
+
+    // Sets user country
+    function setCountry(bytes32 country) public onlyOwner {
+        company.country = country;
+    }
+
+    // Sets user name
+    function setName(bytes32 name) public onlyOwner {
+        company.name = name;
+    }
+
+    // Sets user address1
+    function setAddressStreet(bytes32 addressStreet) public onlyOwner {
+        company.addressStreet = addressStreet;
+    }
+
+    // Sets user city
+    function setCity(bytes32 city) public onlyOwner {
+        company.city = city;
+    }
+
+    // Sets user postalCode
+    function setPostalCode(bytes32 postalCode) public onlyOwner {
+        company.postalCode = postalCode;
+    }
 }
