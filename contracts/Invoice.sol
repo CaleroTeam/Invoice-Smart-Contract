@@ -81,4 +81,18 @@ contract Invoice {
     }
 
     InvoiceStruct invoice;
+
+    // Modifiers
+    modifier onlyBuyer(address payer) {
+        require(payer == invoice.payer && msg.sender == invoice.payer);
+        _;
+    }
+    modifier onlyOwner(address owner) {
+        require(owner == invoice.owner && msg.sender == invoice.owner);
+        _;
+    }
+    modifier onPending() {
+        require(invoice.state == 0);
+        _;
+    }
 }
