@@ -11,12 +11,12 @@ contract CaleroPlatform is Ownable {
     mapping (address => bool) companies;
     address[] companiesList;
 
-    mapping (address => bool) investors;
-    address[] investorsList;
+    mapping (address => bool) sellers;
+    address[] sellersList;
 
     event InvoiceCreated(address invoice);
     event CompanyRegistered(address company);
-    event SellerRegistered(address investor);
+    event SellerRegistered(address seller);
 
     // Add invoice to platform Invoices list
     function addInvoice(address invoice) public {
@@ -47,17 +47,17 @@ contract CaleroPlatform is Ownable {
 
     // Create new Seller
     function createSellers(bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public returns (address) {
-        address investor = new Seller(msg.sender, address(this), country, name, addressStreet, city, postalCode);
-        investors[investor] = true;
-        investorsList.push(investor);
+        address seller = new Seller(msg.sender, address(this), country, name, addressStreet, city, postalCode);
+        sellers[seller] = true;
+        sellersList.push(seller);
 
-        SellerRegistered(investor);
-        return investor;
+        SellerRegistered(seller);
+        return seller;
     }
 
-    // List of all registered investors
+    // List of all registered sellers
     function listSellers() public constant returns (address[]) {
-        return investorsList;
+        return sellersList;
     }   /*
     * @dev kill the contract functionality
     */
