@@ -1,5 +1,7 @@
 pragma solidity ^0.4.18;
 
-contract Company {
+import "./Operations.sol";
+
+contract Company is Operations {
 
 }
