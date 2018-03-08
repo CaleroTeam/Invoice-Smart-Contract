@@ -82,6 +82,22 @@ contract Invoice {
 
     InvoiceStruct invoice;
 
+    // Events
+    event InvoiceClosed(uint time);
+    event WithdrawMoney(address owner, uint time);
+    event CommentSent(address company, string message);
+    event OwnerChanged(address oldValue, address newValue);
+    event CostumerChanged(address oldValue, address newValue);
+    event InvoiceIdChanged(uint oldValue, uint newValue);
+    event PayDueDateChanged(uint oldValue, uint newValue);
+    event ItemChanged(string oldValue, string newValue);
+    event QuantityChanged(uint oldValue, uint newValue);
+    event PricePerUnitChanged(uint oldValue, uint newValue);
+    event ItemDescriptionChanged(string oldValue, string newValue);
+    event AmountForTransferChanged(uint oldValue, uint newValue);
+    event CurrencyChanged(string oldValue, string newValue);
+    event MessageToRecipientChanged(string oldValue, string newValue);
+    
     // Modifiers
     modifier onlyBuyer(address payer) {
         require(payer == invoice.payer && msg.sender == invoice.payer);
