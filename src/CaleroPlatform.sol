@@ -262,6 +262,67 @@ contract Seller is Operations {
         seller.postalCode = postalCode;
     }
 
+    struct InvoiceDetails {
+        address seller;
+        address payer;
+        uint invoiceId;
+        uint payDueDate;
+        string item;
+        uint quantity;
+        uint pricePerUnit;
+        uint amountForPay;
+        string currency;
+        string messageToRecipient;
+    }
+
+    // Create new Invoice for company
+    function createInvoice(
+        address _payer,
+        uint _invoiceId,
+        uint _payDueDate,
+        string _item,
+        uint _quantity,
+        uint _pricePerUnit,
+        uint _amountForPay,
+        string _currency,
+        string _messageToRecipient)
+    public onlyOwner {
+        InvoiceDetails memory invoiceDetails;
+
+        invoiceDetails.seller = address(this);
+        invoiceDetails.payer = _payer;
+        invoiceDetails.invoiceId = _invoiceId;
+        invoiceDetails.payDueDate = _payDueDate;
+        invoiceDetails.item = _item;
+        invoiceDetails.quantity = _quantity;
+        invoiceDetails.pricePerUnit = _pricePerUnit;
+        invoiceDetails.amountForPay = _amountForPay;
+        invoiceDetails.currency = _currency;
+        invoiceDetails.messageToRecipient = _messageToRecipient;
+
+        createInvoiceCall(invoiceDetails);
+    }
+
+    function createInvoiceCall(InvoiceDetails invoiceDetails) private returns (address) {
+        address invoice = new Invoice(
+            invoiceDetails.seller,
+            invoiceDetails.payer,
+            invoiceDetails.invoiceId,
+            invoiceDetails.payDueDate,
+            invoiceDetails.item,
+            invoiceDetails.quantity,
+            invoiceDetails.pricePerUnit,
+            invoiceDetails.amountForPay,
+            invoiceDetails.currency,
+            invoiceDetails.messageToRecipient,
+            seller.CaleroMain);
+
+        CaleroPlatform calero = CaleroPlatform(seller.CaleroMain);
+        calero.addInvoice(invoice);
+
+        return invoice;
+    }
+
     // Modifiers
     modifier onlyOwner() {
         require(isOwner(msg.sender));
@@ -448,7 +509,6 @@ contract Invoice {
         uint pricePerUnit;
         uint amountForPay;
         string currency;
-        string itemDescription;
 
         string messageToRecipient;
 
@@ -467,7 +527,6 @@ contract Invoice {
         uint _pricePerUnit,
         uint _amountForPay,
         string _currency,
-        string _itemDescription,
         string _messageToRecipient,
         address CaleroMain) public
     {
@@ -481,7 +540,6 @@ contract Invoice {
         invoice.item = _item;
         invoice.quantity = _quantity;
         invoice.pricePerUnit = _pricePerUnit;
-        invoice.itemDescription = _itemDescription;
         invoice.amountForPay = _amountForPay;
         invoice.currency = _currency;
 
@@ -504,7 +562,6 @@ contract Invoice {
     event ItemChanged(string oldValue, string newValue);
     event QuantityChanged(uint oldValue, uint newValue);
     event PricePerUnitChanged(uint oldValue, uint newValue);
-    event ItemDescriptionChanged(string oldValue, string newValue);
     event AmountForTransferChanged(uint oldValue, uint newValue);
     event CurrencyChanged(string oldValue, string newValue);
     event MessageToRecipientChanged(string oldValue, string newValue);
@@ -600,11 +657,6 @@ contract Invoice {
         invoice.pricePerUnit = pricePerUnit;
     }
 
-    function setItemDescription(address owner, string itemDescription) public onPending onlyOwner(owner) {
-        ItemDescriptionChanged(invoice.itemDescription, itemDescription);
-        invoice.itemDescription = itemDescription;
-    }
-
     function setAmount(address owner, uint amount) public onPending onlyOwner(owner) {
         AmountForTransferChanged(invoice.amountForPay, amount);
         invoice.amountForPay = amount;
@@ -651,10 +703,6 @@ contract Invoice {
 
     function getPricePerUnit() public constant returns (uint) {
         return invoice.pricePerUnit;
-    }
-
-    function getItemDescription() public constant returns (string) {
-        return invoice.itemDescription;
     }
 
     function getAmount() public constant returns (uint) {

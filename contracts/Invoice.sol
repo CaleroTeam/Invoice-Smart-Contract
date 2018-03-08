@@ -5,7 +5,6 @@ import "./SafeMathLib.sol";
 import "./Company.sol";
 import "./Seller.sol";
 
-
 contract Invoice {
     using SafeMath for uint;
 
@@ -40,7 +39,6 @@ contract Invoice {
         uint pricePerUnit;
         uint amountForPay;
         string currency;
-        string itemDescription;
 
         string messageToRecipient;
 
@@ -49,7 +47,6 @@ contract Invoice {
         mapping (address => SettlementStruct) settlements;
     }
 
-    // Constructor
     function Invoice(
         address _seller,
         address _payer,
@@ -60,7 +57,6 @@ contract Invoice {
         uint _pricePerUnit,
         uint _amountForPay,
         string _currency,
-        string _itemDescription,
         string _messageToRecipient,
         address CaleroMain) public
     {
@@ -74,7 +70,6 @@ contract Invoice {
         invoice.item = _item;
         invoice.quantity = _quantity;
         invoice.pricePerUnit = _pricePerUnit;
-        invoice.itemDescription = _itemDescription;
         invoice.amountForPay = _amountForPay;
         invoice.currency = _currency;
 
@@ -97,7 +92,6 @@ contract Invoice {
     event ItemChanged(string oldValue, string newValue);
     event QuantityChanged(uint oldValue, uint newValue);
     event PricePerUnitChanged(uint oldValue, uint newValue);
-    event ItemDescriptionChanged(string oldValue, string newValue);
     event AmountForTransferChanged(uint oldValue, uint newValue);
     event CurrencyChanged(string oldValue, string newValue);
     event MessageToRecipientChanged(string oldValue, string newValue);
@@ -193,11 +187,6 @@ contract Invoice {
         invoice.pricePerUnit = pricePerUnit;
     }
 
-    function setItemDescription(address owner, string itemDescription) public onPending onlyOwner(owner) {
-        ItemDescriptionChanged(invoice.itemDescription, itemDescription);
-        invoice.itemDescription = itemDescription;
-    }
-
     function setAmount(address owner, uint amount) public onPending onlyOwner(owner) {
         AmountForTransferChanged(invoice.amountForPay, amount);
         invoice.amountForPay = amount;
@@ -246,10 +235,6 @@ contract Invoice {
         return invoice.pricePerUnit;
     }
 
-    function getItemDescription() public constant returns (string) {
-        return invoice.itemDescription;
-    }
-
     function getAmount() public constant returns (uint) {
         return invoice.amountForPay;
     }
@@ -288,7 +273,7 @@ contract Invoice {
     function markAsFinished() private {
         invoice.state = 1;
     }
-    
+
     /*
     * @dev  kill the contract functionality
     */

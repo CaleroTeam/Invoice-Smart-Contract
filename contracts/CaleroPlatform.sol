@@ -60,10 +60,11 @@ contract CaleroPlatform is Ownable {
     // List of all registered sellers
     function listSellers() public constant returns (address[]) {
         return sellersList;
-    }   /*
+    }
+
+    /*
     * @dev kill the contract functionality
     */
-
     function kill() public onlyOwner {
         selfdestruct(owner);
     }
