@@ -261,4 +261,17 @@ contract Invoice {
     function getState() public constant returns (uint8) {
         return invoice.state;
     }
+    
+    // Get history
+    function getOfferExpiresDateHistory(address _company) public constant returns (uint) {
+        return invoice.settlements[_company].offerExpiresDate;
+    }
+
+    function getPayedOnDateHistory(address _company) public constant returns (uint) {
+        return invoice.settlements[_company].payedOnDate;
+    }
+
+    function getPaidHistory(address _company) public constant returns (uint) {
+        return invoice.settlements[_company].paid;
+    }
 }
