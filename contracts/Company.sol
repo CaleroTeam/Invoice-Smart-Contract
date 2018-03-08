@@ -110,4 +110,11 @@ contract Company is Operations {
     function getPostalCode() public constant returns (bytes32) {
         return company.postalCode;
     }
+    
+    /*
+    * @dev kill the contract functionality
+    */
+    function kill() public onlyOwner {
+        selfdestruct(msg.sender);
+    }
 }
