@@ -209,4 +209,56 @@ contract Invoice {
         invoice.messageToRecipient = messageToRecipient;
     }
 
+    // Getters
+    function getOwner() public constant returns (address) {
+        return invoice.owner;
+    }
+
+    function getCustomer() public constant returns (address) {
+        return invoice.payer;
+    }
+
+    function getInvoiceId() public constant returns (uint) {
+        return invoice.invoiceId;
+    }
+
+    function getIssueDate() public constant returns (uint) {
+        return invoice.issueDate;
+    }
+
+    function getPayDueDate() public constant returns (uint) {
+        return invoice.payDueDate;
+    }
+
+    function getItem() public constant returns (string) {
+        return invoice.item;
+    }
+
+    function getQuantity() public constant returns (uint) {
+        return invoice.quantity;
+    }
+
+    function getPricePerUnit() public constant returns (uint) {
+        return invoice.pricePerUnit;
+    }
+
+    function getItemDescription() public constant returns (string) {
+        return invoice.itemDescription;
+    }
+
+    function getAmount() public constant returns (uint) {
+        return invoice.amountForPay;
+    }
+
+    function getCurrency() public constant returns (string) {
+        return invoice.currency;
+    }
+
+    function getMessageToRecipient() public constant returns (string) {
+        return invoice.messageToRecipient;
+    }
+
+    function getState() public constant returns (uint8) {
+        return invoice.state;
+    }
 }
