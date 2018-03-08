@@ -85,4 +85,29 @@ contract Company is Operations {
     function setPostalCode(bytes32 postalCode) public onlyOwner {
         company.postalCode = postalCode;
     }
+
+    // Returns user country
+    function getCountry() public constant returns (bytes32) {
+        return company.country;
+    }
+
+    // Returns user name
+    function getName() public constant returns (bytes32) {
+        return company.name;
+    }
+
+    // Returns user addressStreet
+    function getAddressStreet() public constant returns (bytes32) {
+        return company.addressStreet;
+    }
+
+    // Returns user city
+    function getCity() public constant returns (bytes32) {
+        return company.city;
+    }
+
+    // Returns user postalCode
+    function getPostalCode() public constant returns (bytes32) {
+        return company.postalCode;
+    }
 }
