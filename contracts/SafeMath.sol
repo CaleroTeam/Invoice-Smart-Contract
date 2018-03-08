@@ -2,6 +2,7 @@
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
  */
+pragma solidity ^0.4.18;
 
 library SafeMath {
     function mul(uint a, uint b) internal pure returns (uint256) {
