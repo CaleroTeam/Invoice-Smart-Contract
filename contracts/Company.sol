@@ -33,4 +33,27 @@ contract Company is Operations {
         company.postalCode = postalCode;
     }
 
+    // Modifiers
+    modifier onlyOwner() {
+        require(isOwner(msg.sender));
+        _;
+    }
+
+    // Add new owner to company
+    function addOwner(address user) public onlyOwner {
+        company.users[user] = true;
+        company.usersList.push(user);
+    }
+
+    // Remove existing owner from company
+    function removeOwner(address user) public onlyOwner {
+        company.users[user] = false;
+        company.usersList = removeItem(company.usersList, user);
+    }
+
+    // Check if address is owner
+    function isOwner(address user) public constant returns (bool) {
+        return company.users[user];
+    }
+
 }
