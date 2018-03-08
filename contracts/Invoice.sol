@@ -95,4 +95,42 @@ contract Invoice {
         require(invoice.state == 0);
         _;
     }
+
+    // Actions
+    function buyInvoice(address payer) public onlyBuyer(payer) payable {
+        require(invoice.state == 0); // on pending
+        require(invoice.payDueDate != 0);
+
+        // The order's value must be equal to msg.value and must be more then 0
+        require(msg.value != 0);
+        require(invoice.amountForPay == msg.value);
+
+        SettlementStruct memory settlement;
+
+        settlement.seller = invoice.owner;
+        settlement.payer = payer;
+        settlement.amount = invoice.amountForPay;
+        settlement.offerExpiresDate = invoice.payDueDate;
+        settlement.payedOnDate = now;
+        settlement.paid = msg.value;
+
+        invoice.settlements[invoice.owner] = settlement;
+
+        markAsFinished();
+        InvoiceClosed(now);
+    }
+
+    // Owner withdrawal money from sc
+    function withdrawMoney(address owner) public onlyOwner(owner){
+        require(invoice.settlements[invoice.owner].paid != 0);
+
+        owner.transfer(invoice.settlements[invoice.owner].paid);
+        WithdrawMoney(owner, now);
+    }
+
+    // Buyer can send comment to seller
+    function sendComments(address payer, string message) onlyBuyer(payer) public {
+        /// Trigger the event
+        CommentSent(payer, message);
+    }
 }
