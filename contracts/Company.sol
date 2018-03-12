@@ -1,10 +1,9 @@
 pragma solidity ^0.4.18;
 
 import "./CaleroPlatform.sol";
-import "./Operations.sol";
 import "./Invoice.sol";
 
-contract Company is Operations {
+contract Company {
     struct CompanyStruct {
         // Main smart contract address
         address CaleroMain;

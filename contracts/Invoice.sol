@@ -1,13 +1,10 @@
 pragma solidity ^0.4.18;
 
 import "./CaleroPlatform.sol";
-import "./SafeMathLib.sol";
 import "./Company.sol";
 import "./Seller.sol";
 
 contract Invoice {
-    using SafeMath for uint;
-
     struct SettlementStruct {
         address seller;
         address payer;
@@ -47,19 +44,7 @@ contract Invoice {
         mapping (address => SettlementStruct) settlements;
     }
 
-    function Invoice(
-        address _seller,
-        address _payer,
-        uint _invoiceId,
-        uint _payDueDate,
-        string _item,
-        uint _quantity,
-        uint _pricePerUnit,
-        uint _amountForPay,
-        string _currency,
-        string _messageToRecipient,
-        address CaleroMain) public
-    {
+    function Invoice(address _seller, address _payer, uint _invoiceId, uint _payDueDate, string _item, uint _quantity, uint _pricePerUnit, uint _amountForPay, string _currency, string _messageToRecipient, address CaleroMain) public {
         invoice.owner = _seller;
         invoice.owners.push(_seller);
         invoice.payer = _payer;
@@ -249,24 +234,6 @@ contract Invoice {
 
     function getState() public constant returns (uint8) {
         return invoice.state;
-    }
-
-    // Get history
-    function getOfferExpiresDateHistory(address _company) public constant returns (uint) {
-        return invoice.settlements[_company].offerExpiresDate;
-    }
-
-    function getPayedOnDateHistory(address _company) public constant returns (uint) {
-        return invoice.settlements[_company].payedOnDate;
-    }
-
-    function getPaidHistory(address _company) public constant returns (uint) {
-        return invoice.settlements[_company].paid;
-    }
-
-    // List of invoice all owners
-    function listOwners() public constant returns (address[]) {
-        return invoice.owners;
     }
 
     // Mark invoice as finished

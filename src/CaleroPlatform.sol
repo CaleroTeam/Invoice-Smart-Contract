@@ -1,70 +1,6 @@
 pragma solidity ^0.4.18;
 
 /**
- * @title SafeMath
- * @dev Math operations with safety checks that throw on error
- */
-library SafeMath {
-    function mul(uint a, uint b) internal pure returns (uint256) {
-        uint c = a * b;
-        assert(a == 0 || c / a == b);
-        return c;
-    }
-
-    function div(uint256 a, uint256 b) internal pure returns (uint256){
-        // assert(b > 0); // Solidity automatically throws when dividing by 0
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-        return c;
-    }
-
-    function sub(uint a, uint b) internal pure returns (uint256) {
-        assert(b <= a);
-        return a - b;
-    }
-
-    function add(uint a, uint b) internal pure returns (uint256) {
-        uint c = a + b;
-        assert(c>=a && c>=b);
-        return c;
-    }
-}
-
-contract Operations {
-    /**
-     * Remove provided item from provided array
-     */
-    function removeItem(address[] array, address item) internal pure returns(address[] value) {
-        address[] memory arrayNew = new address[](array.length - 1);
-        uint8 j = 0;
-        for (uint i = 0; i < array.length; i++) {
-            if (array[i] != item) {
-                arrayNew[j] = array[i];
-                j++;
-            }
-        }
-        delete array;
-        return arrayNew;
-    }
-
-    /**
-     * Remove provided item from provided array
-     */
-    function removeItem(address[2][] array, address[2] item) internal pure returns(address[2][] value) {
-        address[2][] memory arrayNew = new address[2][](array.length - 1);
-        uint8 j = 0;
-        for (uint i = 0; i < array.length; i++) {
-            if (array[i][0] != item[0] && array[i][1] != item[1]) {
-                arrayNew[j] = array[i];
-                j++;
-            }
-        }
-        delete array;
-        return arrayNew;
-    }
-}
-
-/**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
  * functions, this simplifies the implementation of "user permissions".
@@ -103,17 +39,7 @@ contract Ownable {
     }
 }
 
-/**
- * @dev Short address attack protection
- */
-contract Protection {
-    modifier onlyPayloadSize(uint numWords) {
-        assert(msg.data.length == numWords * 32 + 4);
-        _;
-    }
-}
-
-contract Company is Operations {
+contract Company {
 
     struct CompanyStruct {
         // Main smart contract address
@@ -155,12 +81,6 @@ contract Company is Operations {
     function addOwner(address user) public onlyOwner {
         company.users[user] = true;
         company.usersList.push(user);
-    }
-
-    // Remove existing owner from company
-    function removeOwner(address user) public onlyOwner {
-        company.users[user] = false;
-        company.usersList = removeItem(company.usersList, user);
     }
 
     // Check if address is owner
@@ -231,7 +151,7 @@ contract Company is Operations {
     }
 }
 
-contract Seller is Operations {
+contract Seller {
 
     struct SellerStruct {
         address CaleroMain;
@@ -335,12 +255,6 @@ contract Seller is Operations {
         seller.usersList.push(user);
     }
 
-    // Remove existing owner from Seller
-    function removeOwner(address user) public onlyOwner {
-        seller.users[user] = false;
-        seller.usersList = removeItem(seller.usersList, user);
-    }
-
     // Check if address is owner
     function isOwner(address user) public constant returns (bool) {
         return seller.users[user];
@@ -442,8 +356,8 @@ contract CaleroPlatform is Ownable {
         address company = new Company(msg.sender, address(this), country, name, addressStreet, city, postalCode);
         companies[company] = true;
         companiesList.push(company);
-        CompanyRegistered(company); // event
 
+        CompanyRegistered(company); // event
         return company;
     }
 
@@ -476,8 +390,6 @@ contract CaleroPlatform is Ownable {
 }
 
 contract Invoice {
-    using SafeMath for uint;
-
     struct SettlementStruct {
         address seller;
         address payer;
@@ -517,19 +429,7 @@ contract Invoice {
         mapping (address => SettlementStruct) settlements;
     }
 
-    function Invoice(
-        address _seller,
-        address _payer,
-        uint _invoiceId,
-        uint _payDueDate,
-        string _item,
-        uint _quantity,
-        uint _pricePerUnit,
-        uint _amountForPay,
-        string _currency,
-        string _messageToRecipient,
-        address CaleroMain) public
-    {
+    function Invoice(address _seller, address _payer, uint _invoiceId, uint _payDueDate, string _item, uint _quantity, uint _pricePerUnit, uint _amountForPay, string _currency, string _messageToRecipient, address CaleroMain) public {
         invoice.owner = _seller;
         invoice.owners.push(_seller);
         invoice.payer = _payer;
@@ -719,24 +619,6 @@ contract Invoice {
 
     function getState() public constant returns (uint8) {
         return invoice.state;
-    }
-
-    // Get history
-    function getOfferExpiresDateHistory(address _company) public constant returns (uint) {
-        return invoice.settlements[_company].offerExpiresDate;
-    }
-
-    function getPayedOnDateHistory(address _company) public constant returns (uint) {
-        return invoice.settlements[_company].payedOnDate;
-    }
-
-    function getPaidHistory(address _company) public constant returns (uint) {
-        return invoice.settlements[_company].paid;
-    }
-
-    // List of invoice all owners
-    function listOwners() public constant returns (address[]) {
-        return invoice.owners;
     }
 
     // Mark invoice as finished
