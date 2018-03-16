@@ -2,9 +2,9 @@ pragma solidity ^0.4.18;
 
 import "./CaleroPlatform.sol";
 import "./Company.sol";
-import "./Seller.sol";
 
 contract Invoice {
+
     struct SettlementStruct {
         address seller;
         address payer;
@@ -17,18 +17,13 @@ contract Invoice {
     struct InvoiceStruct {
         address CaleroMain;
 
-        // Company owner
         address owner;
         address[] owners;
-
-        // Base info
         uint invoiceId;
         uint issueDate;
         uint payDueDate;
-
-        // Buyer/Seller
-        address seller; // seller
-        address payer; // payer
+        address seller;
+        address payer;
 
         // Invoice product/service info
         string item;
@@ -36,15 +31,26 @@ contract Invoice {
         uint pricePerUnit;
         uint amountForPay;
         string currency;
-
         string messageToRecipient;
 
         uint8 state; // State 0 - Pending, 1 - Finished
-
-        mapping (address => SettlementStruct) settlements;
+        mapping(address => SettlementStruct) settlements;
     }
 
-    function Invoice(address _seller, address _payer, uint _invoiceId, uint _payDueDate, string _item, uint _quantity, uint _pricePerUnit, uint _amountForPay, string _currency, string _messageToRecipient, address CaleroMain) public {
+    InvoiceStruct invoice;
+
+    function Invoice(
+        address _seller,
+        address _payer,
+        uint _invoiceId,
+        uint _payDueDate,
+        string _item,
+        uint _quantity,
+        uint _pricePerUnit,
+        uint _amountForPay,
+        string _currency,
+        string _messageToRecipient,
+        address CaleroMain) public {
         invoice.owner = _seller;
         invoice.owners.push(_seller);
         invoice.payer = _payer;
@@ -63,8 +69,6 @@ contract Invoice {
         invoice.state = 0;
         invoice.CaleroMain = CaleroMain;
     }
-
-    InvoiceStruct invoice;
 
     // Events
     event InvoiceClosed(uint time);
@@ -97,7 +101,8 @@ contract Invoice {
 
     // Actions
     function buyInvoice(address payer) public onlyBuyer(payer) payable {
-        require(invoice.state == 0); // on pending
+        require(invoice.state == 0);
+        // on pending
         require(invoice.payDueDate != 0);
 
         // The order's value must be equal to msg.value and must be more then 0
@@ -120,7 +125,7 @@ contract Invoice {
     }
 
     // Owner withdrawal money from sc
-    function withdrawMoney(address owner) public onlyOwner(owner){
+    function withdrawMoney(address owner) public onlyOwner(owner) {
         require(invoice.settlements[invoice.owner].paid != 0);
 
         owner.transfer(invoice.settlements[invoice.owner].paid);
@@ -131,6 +136,60 @@ contract Invoice {
     function sendComments(address payer, string message) onlyBuyer(payer) public {
         /// Trigger the event
         CommentSent(payer, message);
+    }
+
+    // Mark invoice as finished
+    function markAsFinished() private {
+        invoice.state = 1;
+    }
+
+    // Getters
+    function getOwner() public constant returns (address) {
+        return invoice.owner;
+    }
+
+    function getCustomer() public constant returns (address) {
+        return invoice.payer;
+    }
+
+    function getInvoiceId() public constant returns (uint) {
+        return invoice.invoiceId;
+    }
+
+    function getIssueDate() public constant returns (uint) {
+        return invoice.issueDate;
+    }
+
+    function getPayDueDate() public constant returns (uint) {
+        return invoice.payDueDate;
+    }
+
+    function getItem() public constant returns (string) {
+        return invoice.item;
+    }
+
+    function getQuantity() public constant returns (uint) {
+        return invoice.quantity;
+    }
+
+    function getPricePerUnit() public constant returns (uint) {
+        return invoice.pricePerUnit;
+    }
+
+    function getAmount() public constant returns (uint) {
+        return invoice.amountForPay;
+    }
+
+    function getCurrency() public constant returns (string) {
+        return invoice.currency;
+    }
+
+    function getMessageToRecipient() public constant returns (string) {
+        return invoice.messageToRecipient;
+    }
+
+    function getState() public constant returns (uint8) {
+        return invoice.state;
     }
 
     // Setter
@@ -187,64 +246,9 @@ contract Invoice {
         invoice.messageToRecipient = messageToRecipient;
     }
 
-    // Getters
-    function getOwner() public constant returns (address) {
-        return invoice.owner;
-    }
-
-    function getCustomer() public constant returns (address) {
-        return invoice.payer;
-    }
-
-    function getInvoiceId() public constant returns (uint) {
-        return invoice.invoiceId;
-    }
-
-    function getIssueDate() public constant returns (uint) {
-        return invoice.issueDate;
-    }
-
-    function getPayDueDate() public constant returns (uint) {
-        return invoice.payDueDate;
-    }
-
-    function getItem() public constant returns (string) {
-        return invoice.item;
-    }
-
-    function getQuantity() public constant returns (uint) {
-        return invoice.quantity;
-    }
-
-    function getPricePerUnit() public constant returns (uint) {
-        return invoice.pricePerUnit;
-    }
-
-    function getAmount() public constant returns (uint) {
-        return invoice.amountForPay;
-    }
-
-    function getCurrency() public constant returns (string) {
-        return invoice.currency;
-    }
-
-    function getMessageToRecipient() public constant returns (string) {
-        return invoice.messageToRecipient;
-    }
-
-    function getState() public constant returns (uint8) {
-        return invoice.state;
-    }
-
-    // Mark invoice as finished
-    function markAsFinished() private {
-        invoice.state = 1;
-    }
-
-    /*
-    * @dev  kill the contract functionality
-    */
+    // kill the contract
     function kill(address owner) public onlyOwner(owner) {
         selfdestruct(owner);
     }
+
 }

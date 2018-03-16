@@ -1,185 +1,73 @@
 pragma solidity ^0.4.18;
 
-/**
- * @title Ownable
- * @dev The Ownable contract has an owner address, and provides basic authorization control
- * functions, this simplifies the implementation of "user permissions".
- */
 contract Ownable {
+
     address public owner;
     address public newOwner;
 
     event OwnerUpdate(address _prevOwner, address _newOwner);
-
-    function Ownable() public {
-        owner = msg.sender;
-    }
 
     modifier onlyOwner {
         require(msg.sender == owner);
         _;
     }
 
-    /**
-     * @dev Transfers ownership. New owner has to accept in order ownership change to take effect
-     */
+    function Ownable() public {
+        owner = msg.sender;
+    }
+
+    // Transfers ownership
     function transferOwnership(address _newOwner) public onlyOwner {
         require(_newOwner != owner);
         newOwner = _newOwner;
     }
 
-    /**
-     * @dev Accepts transferred ownership
-     */
+    // Accepts transferred ownership
     function acceptOwnership() public {
         require(msg.sender == newOwner);
         OwnerUpdate(owner, newOwner);
         owner = newOwner;
         newOwner = 0x0;
     }
+
 }
 
 contract Company {
 
     struct CompanyStruct {
-        // Main smart contract address
         address CaleroMain;
 
-        // Company country, name, addressStreet, city, postal code
-        bytes32 country;
-        bytes32 addressStreet;
-        bytes32 name;
-        bytes32 city;
-        bytes32 postalCode;
-
-        // Additional info
-        mapping (address => bool) users;
+        string country;
+        string name;
+        string address1;
+        string address2;
+        string city;
+        uint postalCode;
+        mapping(address => bool) users;
         address[] usersList;
     }
 
     CompanyStruct company;
 
-    // constructor
-    function Company(address owner, address CaleroMain, bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public {
+    // Constructor
+    function Company(
+        address owner,
+        address CaleroMain,
+        string country,
+        string name,
+        string address1,
+        string address2,
+        string city,
+        uint postalCode) public {
         company.users[owner] = true;
         company.usersList.push(owner);
         company.CaleroMain = CaleroMain;
         company.country = country;
         company.name = name;
-        company.addressStreet = addressStreet;
+        company.address1 = address1;
+        company.address2 = address2;
         company.city = city;
         company.postalCode = postalCode;
-    }
-
-    // Modifiers
-    modifier onlyOwner() {
-        require(isOwner(msg.sender));
-        _;
-    }
-
-    // Add new owner to company
-    function addOwner(address user) public onlyOwner {
-        company.users[user] = true;
-        company.usersList.push(user);
-    }
-
-    // Check if address is owner
-    function isOwner(address user) public constant returns (bool) {
-        return company.users[user];
-    }
-
-    // List of company all owners
-    function listOwners() public constant returns(address[]) {
-        return company.usersList;
-    }
-
-    // Sets user country
-    function setCountry(bytes32 country) public onlyOwner {
-        company.country = country;
-    }
-
-    // Sets user name
-    function setName(bytes32 name) public onlyOwner {
-        company.name = name;
-    }
-
-    // Sets user address1
-    function setAddressStreet(bytes32 addressStreet) public onlyOwner {
-        company.addressStreet = addressStreet;
-    }
-
-    // Sets user city
-    function setCity(bytes32 city) public onlyOwner {
-        company.city = city;
-    }
-
-    // Sets user postalCode
-    function setPostalCode(bytes32 postalCode) public onlyOwner {
-        company.postalCode = postalCode;
-    }
-
-    // Returns user country
-    function getCountry() public constant returns (bytes32) {
-        return company.country;
-    }
-
-    // Returns user name
-    function getName() public constant returns (bytes32) {
-        return company.name;
-    }
-
-    // Returns user addressStreet
-    function getAddressStreet() public constant returns (bytes32) {
-        return company.addressStreet;
-    }
-
-    // Returns user city
-    function getCity() public constant returns (bytes32) {
-        return company.city;
-    }
-
-    // Returns user postalCode
-    function getPostalCode() public constant returns (bytes32) {
-        return company.postalCode;
-    }
-
-    /*
-    * @dev kill the contract functionality
-    */
-    function kill() public onlyOwner {
-        selfdestruct(msg.sender);
-    }
-}
-
-contract Seller {
-
-    struct SellerStruct {
-        address CaleroMain;
-
-        // Seller country, name, addressStreet, city, postal code
-        bytes32 country;
-        bytes32 name;
-        bytes32 addressStreet;
-        bytes32 city;
-        bytes32 postalCode;
-
-        // Additional info
-        mapping (address => bool) users;
-        address[] usersList;
-    }
-
-    SellerStruct seller;
-
-    // Constructor
-    function Seller(address owner, address CaleroMain, bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public {
-        seller.users[owner] = true;
-        seller.usersList.push(owner);
-        seller.CaleroMain = CaleroMain;
-        seller.country = country;
-        seller.name = name;
-        seller.addressStreet = addressStreet;
-        seller.city = city;
-        seller.postalCode = postalCode;
     }
 
     struct InvoiceDetails {
@@ -195,7 +83,7 @@ contract Seller {
         string messageToRecipient;
     }
 
-    // Create new Invoice for company
+    // Create a new invoice
     function createInvoice(
         address _payer,
         uint _invoiceId,
@@ -223,6 +111,11 @@ contract Seller {
         createInvoiceCall(invoiceDetails);
     }
 
+    modifier onlyOwner() {
+        require(isOwner(msg.sender));
+        _;
+    }
+
     function createInvoiceCall(InvoiceDetails invoiceDetails) private returns (address) {
         address invoice = new Invoice(
             invoiceDetails.seller,
@@ -235,161 +128,87 @@ contract Seller {
             invoiceDetails.amountForPay,
             invoiceDetails.currency,
             invoiceDetails.messageToRecipient,
-            seller.CaleroMain);
+            company.CaleroMain);
 
-        CaleroPlatform calero = CaleroPlatform(seller.CaleroMain);
+        CaleroMain calero = CaleroMain(company.CaleroMain);
         calero.addInvoice(invoice);
 
         return invoice;
     }
 
-    // Modifiers
-    modifier onlyOwner() {
-        require(isOwner(msg.sender));
-        _;
-    }
-
-    // Add new owner to Seller
+    // Add new owner to Company
     function addOwner(address user) public onlyOwner {
-        seller.users[user] = true;
-        seller.usersList.push(user);
+        company.users[user] = true;
+        company.usersList.push(user);
     }
 
-    // Check if address is owner
+    // Getters (no fee)
     function isOwner(address user) public constant returns (bool) {
-        return seller.users[user];
+        return company.users[user];
     }
 
-    // List of seller all owners
-    function listOwners() public constant returns(address[]) {
-        return seller.usersList;
+    function listOwners() public constant returns (address[]) {
+        return company.usersList;
     }
 
-    // Sets seller country
-    function setCountry(bytes32 country) public onlyOwner {
-        seller.country = country;
+    function getCountry() public constant returns (string) {
+        return company.country;
     }
 
-    // Sets seller name
-    function setName(bytes32 name) public onlyOwner {
-        seller.name = name;
+    function getName() public constant returns (string) {
+        return company.name;
     }
 
-    // Sets seller addressStreet
-    function setAddressStreet(bytes32 addressStreet) public onlyOwner {
-        seller.addressStreet = addressStreet;
+    function getAddress1() public constant returns (string) {
+        return company.address1;
     }
 
-    // Sets seller city
-    function setCity(bytes32 city) public onlyOwner {
-        seller.city = city;
+    function getAddress2() public constant returns (string) {
+        return company.address2;
     }
 
-    // Sets seller postalCode
-    function setPostalCode(bytes32 postalCode) public onlyOwner {
-        seller.postalCode = postalCode;
+    function getCity() public constant returns (string) {
+        return company.city;
     }
 
-    // Returns seller country
-    function getCountry() public constant returns (bytes32) {
-        return seller.country;
+    function getPostalCode() public constant returns (uint) {
+        return company.postalCode;
     }
 
-    // Returns seller name
-    function getName() public constant returns (bytes32) {
-        return seller.name;
+    // Setters (need fee)
+    function setCountry(string country) public onlyOwner {
+        company.country = country;
     }
 
-    // Returns seller address1
-    function getAddressStreet() public constant returns (bytes32) {
-        return seller.addressStreet;
+    function setName(string name) public onlyOwner {
+        company.name = name;
     }
 
-    // Returns seller city
-    function getCity() public constant returns (bytes32) {
-        return seller.city;
+    function setAddress1(string address1) public onlyOwner {
+        company.address1 = address1;
     }
 
-    // Returns seller postalCode
-    function getPostalCode() public constant returns (bytes32) {
-        return seller.postalCode;
+    function setAddress2(string address2) public onlyOwner {
+        company.address2 = address2;
     }
 
-    /*
-    * @dev kill the contract functionality
-    */
+    function setCity(string city) public onlyOwner {
+        company.city = city;
+    }
+
+    function setPostalCode(uint postalCode) public onlyOwner {
+        company.postalCode = postalCode;
+    }
+
+    // kill the contract
     function kill() public onlyOwner {
         selfdestruct(msg.sender);
     }
-}
 
-contract CaleroPlatform is Ownable {
-    uint nextInvoiceId = 0;
-
-    mapping (address => bool) invoices;
-    address[] invoicesList;
-
-    mapping (address => bool) companies;
-    address[] companiesList;
-
-    mapping (address => bool) sellers;
-    address[] sellersList;
-
-    event InvoiceCreated(address invoice);
-    event CompanyRegistered(address company);
-    event SellerRegistered(address seller);
-
-    // Add invoice to platform Invoices list
-    function addInvoice(address invoice) public {
-        invoices[invoice] = true;
-        invoicesList.push(invoice);
-        InvoiceCreated(invoice); // event
-    }
-
-    // List all invoices
-    function listInvoices() public constant returns (address[]) {
-        return invoicesList;
-    }
-
-    // Create new company
-    function createCompany(bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public returns (address) {
-        address company = new Company(msg.sender, address(this), country, name, addressStreet, city, postalCode);
-        companies[company] = true;
-        companiesList.push(company);
-
-        CompanyRegistered(company); // event
-        return company;
-    }
-
-    // List of all registered companies
-    function listCompanies() public constant returns (address[]) {
-        return companiesList;
-    }
-
-    // Create new Seller
-    function createSellers(bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public returns (address) {
-        address seller = new Seller(msg.sender, address(this), country, name, addressStreet, city, postalCode);
-        sellers[seller] = true;
-        sellersList.push(seller);
-
-        SellerRegistered(seller);
-        return seller;
-    }
-
-    // List of all registered sellers
-    function listSellers() public constant returns (address[]) {
-        return sellersList;
-    }
-
-    /*
-    * @dev kill the contract functionality
-    */
-    function kill() public onlyOwner {
-        selfdestruct(owner);
-    }
 }
 
 contract Invoice {
+
     struct SettlementStruct {
         address seller;
         address payer;
@@ -402,18 +221,13 @@ contract Invoice {
     struct InvoiceStruct {
         address CaleroMain;
 
-        // Company owner
         address owner;
         address[] owners;
-
-        // Base info
         uint invoiceId;
         uint issueDate;
         uint payDueDate;
-
-        // Buyer/Seller
-        address seller; // seller
-        address payer; // payer
+        address seller;
+        address payer;
 
         // Invoice product/service info
         string item;
@@ -421,15 +235,26 @@ contract Invoice {
         uint pricePerUnit;
         uint amountForPay;
         string currency;
-
         string messageToRecipient;
 
         uint8 state; // State 0 - Pending, 1 - Finished
-
-        mapping (address => SettlementStruct) settlements;
+        mapping(address => SettlementStruct) settlements;
     }
 
-    function Invoice(address _seller, address _payer, uint _invoiceId, uint _payDueDate, string _item, uint _quantity, uint _pricePerUnit, uint _amountForPay, string _currency, string _messageToRecipient, address CaleroMain) public {
+    InvoiceStruct invoice;
+
+    function Invoice(
+        address _seller,
+        address _payer,
+        uint _invoiceId,
+        uint _payDueDate,
+        string _item,
+        uint _quantity,
+        uint _pricePerUnit,
+        uint _amountForPay,
+        string _currency,
+        string _messageToRecipient,
+        address CaleroMain) public {
         invoice.owner = _seller;
         invoice.owners.push(_seller);
         invoice.payer = _payer;
@@ -448,8 +273,6 @@ contract Invoice {
         invoice.state = 0;
         invoice.CaleroMain = CaleroMain;
     }
-
-    InvoiceStruct invoice;
 
     // Events
     event InvoiceClosed(uint time);
@@ -482,7 +305,8 @@ contract Invoice {
 
     // Actions
     function buyInvoice(address payer) public onlyBuyer(payer) payable {
-        require(invoice.state == 0); // on pending
+        require(invoice.state == 0);
+        // on pending
         require(invoice.payDueDate != 0);
 
         // The order's value must be equal to msg.value and must be more then 0
@@ -505,7 +329,7 @@ contract Invoice {
     }
 
     // Owner withdrawal money from sc
-    function withdrawMoney(address owner) public onlyOwner(owner){
+    function withdrawMoney(address owner) public onlyOwner(owner) {
         require(invoice.settlements[invoice.owner].paid != 0);
 
         owner.transfer(invoice.settlements[invoice.owner].paid);
@@ -516,6 +340,60 @@ contract Invoice {
     function sendComments(address payer, string message) onlyBuyer(payer) public {
         /// Trigger the event
         CommentSent(payer, message);
+    }
+
+    // Mark invoice as finished
+    function markAsFinished() private {
+        invoice.state = 1;
+    }
+
+    // Getters
+    function getOwner() public constant returns (address) {
+        return invoice.owner;
+    }
+
+    function getCustomer() public constant returns (address) {
+        return invoice.payer;
+    }
+
+    function getInvoiceId() public constant returns (uint) {
+        return invoice.invoiceId;
+    }
+
+    function getIssueDate() public constant returns (uint) {
+        return invoice.issueDate;
+    }
+
+    function getPayDueDate() public constant returns (uint) {
+        return invoice.payDueDate;
+    }
+
+    function getItem() public constant returns (string) {
+        return invoice.item;
+    }
+
+    function getQuantity() public constant returns (uint) {
+        return invoice.quantity;
+    }
+
+    function getPricePerUnit() public constant returns (uint) {
+        return invoice.pricePerUnit;
+    }
+
+    function getAmount() public constant returns (uint) {
+        return invoice.amountForPay;
+    }
+
+    function getCurrency() public constant returns (string) {
+        return invoice.currency;
+    }
+
+    function getMessageToRecipient() public constant returns (string) {
+        return invoice.messageToRecipient;
+    }
+
+    function getState() public constant returns (uint8) {
+        return invoice.state;
     }
 
     // Setter
@@ -572,64 +450,64 @@ contract Invoice {
         invoice.messageToRecipient = messageToRecipient;
     }
 
-    // Getters
-    function getOwner() public constant returns (address) {
-        return invoice.owner;
-    }
-
-    function getCustomer() public constant returns (address) {
-        return invoice.payer;
-    }
-
-    function getInvoiceId() public constant returns (uint) {
-        return invoice.invoiceId;
-    }
-
-    function getIssueDate() public constant returns (uint) {
-        return invoice.issueDate;
-    }
-
-    function getPayDueDate() public constant returns (uint) {
-        return invoice.payDueDate;
-    }
-
-    function getItem() public constant returns (string) {
-        return invoice.item;
-    }
-
-    function getQuantity() public constant returns (uint) {
-        return invoice.quantity;
-    }
-
-    function getPricePerUnit() public constant returns (uint) {
-        return invoice.pricePerUnit;
-    }
-
-    function getAmount() public constant returns (uint) {
-        return invoice.amountForPay;
-    }
-
-    function getCurrency() public constant returns (string) {
-        return invoice.currency;
-    }
-
-    function getMessageToRecipient() public constant returns (string) {
-        return invoice.messageToRecipient;
-    }
-
-    function getState() public constant returns (uint8) {
-        return invoice.state;
-    }
-
-    // Mark invoice as finished
-    function markAsFinished() private {
-        invoice.state = 1;
-    }
-
-    /*
-    * @dev  kill the contract functionality
-    */
+    // kill the contract
     function kill(address owner) public onlyOwner(owner) {
         selfdestruct(owner);
     }
+
+}
+
+contract CaleroMain is Ownable {
+
+    mapping(address => bool) invoices;
+    mapping(address => bool) companies;
+
+    address[] invoicesList;
+    address[] companiesList;
+
+    event InvoiceCreated(address invoice);
+    event CompanyRegistered(address company);
+
+    // Add invoice to platform
+    function addInvoice(
+        address invoice) public {
+        invoices[invoice] = true;
+        invoicesList.push(invoice);
+
+        InvoiceCreated(invoice);
+    }
+
+    // List od all invoices
+    function listInvoices() public constant returns (address[]) {
+        return invoicesList;
+    }
+
+    // Create a new company
+    function createCompany(
+        string country,
+        string name,
+        string address1,
+        string address2,
+        string city,
+        uint postalCode) public returns (address) {
+        // Call a smart contract for company
+        address company = new Company(msg.sender, address(this), country, name, address1, address2, city, postalCode);
+
+        companies[company] = true;
+        companiesList.push(company);
+
+        CompanyRegistered(company);
+        return company;
+    }
+
+    // List of all registered companies
+    function listCompanies() public constant returns (address[]) {
+        return companiesList;
+    }
+
+    // kill the contract
+    function kill() public onlyOwner {
+        selfdestruct(owner);
+    }
+
 }

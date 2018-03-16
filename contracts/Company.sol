@@ -4,118 +4,176 @@ import "./CaleroPlatform.sol";
 import "./Invoice.sol";
 
 contract Company {
+
     struct CompanyStruct {
-        // Main smart contract address
         address CaleroMain;
 
-        // Company country, name, addressStreet, city, postal code
-        bytes32 country;
-        bytes32 addressStreet;
-        bytes32 name;
-        bytes32 city;
-        bytes32 postalCode;
-
-        // Additional info
-        mapping (address => bool) users;
+        string country;
+        string name;
+        string address1;
+        string address2;
+        string city;
+        uint postalCode;
+        mapping(address => bool) users;
         address[] usersList;
     }
 
     CompanyStruct company;
 
     // Constructor
-    function Company(address owner, address CaleroMain, bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public {
+    function Company(
+        address owner,
+        address CaleroMain,
+        string country,
+        string name,
+        string address1,
+        string address2,
+        string city,
+        uint postalCode) public {
         company.users[owner] = true;
         company.usersList.push(owner);
         company.CaleroMain = CaleroMain;
         company.country = country;
         company.name = name;
-        company.addressStreet = addressStreet;
+        company.address1 = address1;
+        company.address2 = address2;
         company.city = city;
         company.postalCode = postalCode;
     }
 
-    // Modifiers
+    struct InvoiceDetails {
+        address seller;
+        address payer;
+        uint invoiceId;
+        uint payDueDate;
+        string item;
+        uint quantity;
+        uint pricePerUnit;
+        uint amountForPay;
+        string currency;
+        string messageToRecipient;
+    }
+
+    // Create a new invoice
+    function createInvoice(
+        address _payer,
+        uint _invoiceId,
+        uint _payDueDate,
+        string _item,
+        uint _quantity,
+        uint _pricePerUnit,
+        uint _amountForPay,
+        string _currency,
+        string _messageToRecipient)
+    public onlyOwner {
+        InvoiceDetails memory invoiceDetails;
+
+        invoiceDetails.seller = address(this);
+        invoiceDetails.payer = _payer;
+        invoiceDetails.invoiceId = _invoiceId;
+        invoiceDetails.payDueDate = _payDueDate;
+        invoiceDetails.item = _item;
+        invoiceDetails.quantity = _quantity;
+        invoiceDetails.pricePerUnit = _pricePerUnit;
+        invoiceDetails.amountForPay = _amountForPay;
+        invoiceDetails.currency = _currency;
+        invoiceDetails.messageToRecipient = _messageToRecipient;
+
+        createInvoiceCall(invoiceDetails);
+    }
+
     modifier onlyOwner() {
         require(isOwner(msg.sender));
         _;
     }
 
-    // Add new owner to company
+    function createInvoiceCall(InvoiceDetails invoiceDetails) private returns (address) {
+        address invoice = new Invoice(
+            invoiceDetails.seller,
+            invoiceDetails.payer,
+            invoiceDetails.invoiceId,
+            invoiceDetails.payDueDate,
+            invoiceDetails.item,
+            invoiceDetails.quantity,
+            invoiceDetails.pricePerUnit,
+            invoiceDetails.amountForPay,
+            invoiceDetails.currency,
+            invoiceDetails.messageToRecipient,
+            company.CaleroMain);
+
+        CaleroMain calero = CaleroMain(company.CaleroMain);
+        calero.addInvoice(invoice);
+
+        return invoice;
+    }
+
+    // Add new owner to Company
     function addOwner(address user) public onlyOwner {
         company.users[user] = true;
         company.usersList.push(user);
     }
 
-    // Remove existing owner from company
-    function removeOwner(address user) public onlyOwner {
-        company.users[user] = false;
-        company.usersList = removeItem(company.usersList, user);
-    }
-
-    // Check if address is owner
+    // Getters (no fee)
     function isOwner(address user) public constant returns (bool) {
         return company.users[user];
     }
 
-    // List of company all owners
-    function listOwners() public constant returns(address[]) {
+    function listOwners() public constant returns (address[]) {
         return company.usersList;
     }
 
-    // Sets user country
-    function setCountry(bytes32 country) public onlyOwner {
-        company.country = country;
-    }
-
-    // Sets user name
-    function setName(bytes32 name) public onlyOwner {
-        company.name = name;
-    }
-
-    // Sets user address1
-    function setAddressStreet(bytes32 addressStreet) public onlyOwner {
-        company.addressStreet = addressStreet;
-    }
-
-    // Sets user city
-    function setCity(bytes32 city) public onlyOwner {
-        company.city = city;
-    }
-
-    // Sets user postalCode
-    function setPostalCode(bytes32 postalCode) public onlyOwner {
-        company.postalCode = postalCode;
-    }
-
-    // Returns user country
-    function getCountry() public constant returns (bytes32) {
+    function getCountry() public constant returns (string) {
         return company.country;
     }
 
-    // Returns user name
-    function getName() public constant returns (bytes32) {
+    function getName() public constant returns (string) {
         return company.name;
     }
 
-    // Returns user addressStreet
-    function getAddressStreet() public constant returns (bytes32) {
-        return company.addressStreet;
+    function getAddress1() public constant returns (string) {
+        return company.address1;
     }
 
-    // Returns user city
-    function getCity() public constant returns (bytes32) {
+    function getAddress2() public constant returns (string) {
+        return company.address2;
+    }
+
+    function getCity() public constant returns (string) {
         return company.city;
     }
 
-    // Returns user postalCode
-    function getPostalCode() public constant returns (bytes32) {
+    function getPostalCode() public constant returns (uint) {
         return company.postalCode;
     }
-    
-    /*
-    * @dev kill the contract functionality
-    */
+
+    // Setters (need fee)
+    function setCountry(string country) public onlyOwner {
+        company.country = country;
+    }
+
+    function setName(string name) public onlyOwner {
+        company.name = name;
+    }
+
+    function setAddress1(string address1) public onlyOwner {
+        company.address1 = address1;
+    }
+
+    function setAddress2(string address2) public onlyOwner {
+        company.address2 = address2;
+    }
+
+    function setCity(string city) public onlyOwner {
+        company.city = city;
+    }
+
+    function setPostalCode(uint postalCode) public onlyOwner {
+        company.postalCode = postalCode;
+    }
+
+    // kill the contract
     function kill() public onlyOwner {
         selfdestruct(msg.sender);
     }
+
 }

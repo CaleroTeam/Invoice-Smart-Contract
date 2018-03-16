@@ -2,43 +2,47 @@ pragma solidity ^0.4.18;
 
 import "./Ownable.sol";
 import "./Company.sol";
-import "./Seller.sol";
 
-contract CaleroPlatform is Ownable {
-    uint nextInvoiceId = 0;
+contract CaleroMain is Ownable {
 
-    mapping (address => bool) invoices;
+    mapping(address => bool) invoices;
+    mapping(address => bool) companies;
+
     address[] invoicesList;
-
-    mapping (address => bool) companies;
     address[] companiesList;
-
-    mapping (address => bool) sellers;
-    address[] sellersList;
 
     event InvoiceCreated(address invoice);
     event CompanyRegistered(address company);
-    event SellerRegistered(address seller);
 
-    // Add invoice to platform Invoices list
-    function addInvoice(address invoice) public {
+    // Add invoice to platform
+    function addInvoice(
+        address invoice) public {
         invoices[invoice] = true;
         invoicesList.push(invoice);
-        InvoiceCreated(invoice); // event
+
+        InvoiceCreated(invoice);
     }
 
-    // List all invoices
+    // List od all invoices
     function listInvoices() public constant returns (address[]) {
         return invoicesList;
     }
 
-    // Create new company
-    function createCompany(bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public returns (address) {
-        address company = new Company(msg.sender, address(this), country, name, addressStreet, city, postalCode);
+    // Create a new company
+    function createCompany(
+        string country,
+        string name,
+        string address1,
+        string address2,
+        string city,
+        uint postalCode) public returns (address) {
+        // Call a smart contract for company
+        address company = new Company(msg.sender, address(this), country, name, address1, address2, city, postalCode);
+
         companies[company] = true;
         companiesList.push(company);
-        CompanyRegistered(company); // event
 
+        CompanyRegistered(company);
         return company;
     }
 
@@ -47,25 +51,9 @@ contract CaleroPlatform is Ownable {
         return companiesList;
     }
 
-    // Create new Seller
-    function createSellers(bytes32 country, bytes32 name, bytes32 addressStreet, bytes32 city, bytes32 postalCode) public returns (address) {
-        address seller = new Seller(msg.sender, address(this), country, name, addressStreet, city, postalCode);
-        sellers[seller] = true;
-        sellersList.push(seller);
-
-        SellerRegistered(seller);
-        return seller;
-    }
-
-    // List of all registered sellers
-    function listSellers() public constant returns (address[]) {
-        return sellersList;
-    }
-
-    /*
-    * @dev kill the contract functionality
-    */
+    // kill the contract
     function kill() public onlyOwner {
         selfdestruct(owner);
     }
+
 }
