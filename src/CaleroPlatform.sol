@@ -32,11 +32,65 @@ contract Ownable {
 
 }
 
+contract CaleroMain is Ownable {
+
+    mapping(address => bool) invoices;
+    mapping(address => bool) companies;
+
+    address[] invoicesList;
+    address[] companiesList;
+
+    event InvoiceCreated(address invoice);
+    event CompanyRegistered(address company);
+
+    // Add invoice to platform
+    function addInvoice(
+        address invoice) public {
+        invoices[invoice] = true;
+        invoicesList.push(invoice);
+
+        InvoiceCreated(invoice);
+    }
+
+    // List od all invoices
+    function listInvoices() public constant returns (address[]) {
+        return invoicesList;
+    }
+
+    // Create a new company
+    function createCompany(
+        string country,
+        string name,
+        string address1,
+        string address2,
+        string city,
+        uint postalCode) public returns (address) {
+        // Call a smart contract for company
+        address company = new Company(msg.sender, address(this), country, name, address1, address2, city, postalCode);
+
+        companies[company] = true;
+        companiesList.push(company);
+
+        CompanyRegistered(company);
+        return company;
+    }
+
+    // List of all registered companies
+    function listCompanies() public constant returns (address[]) {
+        return companiesList;
+    }
+
+    // kill the contract
+    function kill() public onlyOwner {
+        selfdestruct(owner);
+    }
+
+}
+
 contract Company {
 
     struct CompanyStruct {
-        address CaleroMain;
-
+        address caleroMain;
         string country;
         string name;
         string address1;
@@ -52,7 +106,7 @@ contract Company {
     // Constructor
     function Company(
         address owner,
-        address CaleroMain,
+        address caleroMain,
         string country,
         string name,
         string address1,
@@ -61,7 +115,7 @@ contract Company {
         uint postalCode) public {
         company.users[owner] = true;
         company.usersList.push(owner);
-        company.CaleroMain = CaleroMain;
+        company.caleroMain = caleroMain;
         company.country = country;
         company.name = name;
         company.address1 = address1;
@@ -94,7 +148,7 @@ contract Company {
         uint _amountForPay,
         string _currency,
         string _messageToRecipient)
-    public onlyOwner {
+    public onlyOwner returns (address) {
         InvoiceDetails memory invoiceDetails;
 
         invoiceDetails.seller = address(this);
@@ -108,15 +162,6 @@ contract Company {
         invoiceDetails.currency = _currency;
         invoiceDetails.messageToRecipient = _messageToRecipient;
 
-        createInvoiceCall(invoiceDetails);
-    }
-
-    modifier onlyOwner() {
-        require(isOwner(msg.sender));
-        _;
-    }
-
-    function createInvoiceCall(InvoiceDetails invoiceDetails) private returns (address) {
         address invoice = new Invoice(
             invoiceDetails.seller,
             invoiceDetails.payer,
@@ -128,13 +173,19 @@ contract Company {
             invoiceDetails.amountForPay,
             invoiceDetails.currency,
             invoiceDetails.messageToRecipient,
-            company.CaleroMain);
+            company.caleroMain);
 
-        CaleroMain calero = CaleroMain(company.CaleroMain);
+        CaleroMain calero = CaleroMain(company.caleroMain);
         calero.addInvoice(invoice);
 
         return invoice;
     }
+
+    modifier onlyOwner() {
+        require(isOwner(msg.sender));
+        _;
+    }
+
 
     // Add new owner to Company
     function addOwner(address user) public onlyOwner {
@@ -219,8 +270,7 @@ contract Invoice {
     }
 
     struct InvoiceStruct {
-        address CaleroMain;
-
+        address caleroMain;
         address owner;
         address[] owners;
         uint invoiceId;
@@ -254,7 +304,7 @@ contract Invoice {
         uint _amountForPay,
         string _currency,
         string _messageToRecipient,
-        address CaleroMain) public {
+        address caleroMain) public {
         invoice.owner = _seller;
         invoice.owners.push(_seller);
         invoice.payer = _payer;
@@ -271,7 +321,7 @@ contract Invoice {
         invoice.messageToRecipient = _messageToRecipient;
 
         invoice.state = 0;
-        invoice.CaleroMain = CaleroMain;
+        invoice.caleroMain = caleroMain;
     }
 
     // Events
@@ -305,8 +355,7 @@ contract Invoice {
 
     // Actions
     function buyInvoice(address payer) public onlyBuyer(payer) payable {
-        require(invoice.state == 0);
-        // on pending
+        require(invoice.state == 0); // on pending
         require(invoice.payDueDate != 0);
 
         // The order's value must be equal to msg.value and must be more then 0
@@ -350,6 +399,10 @@ contract Invoice {
     // Getters
     function getOwner() public constant returns (address) {
         return invoice.owner;
+    }
+
+    function listOwners() public constant returns (address[]) {
+        return invoice.owners;
     }
 
     function getCustomer() public constant returns (address) {
@@ -452,61 +505,6 @@ contract Invoice {
 
     // kill the contract
     function kill(address owner) public onlyOwner(owner) {
-        selfdestruct(owner);
-    }
-
-}
-
-contract CaleroMain is Ownable {
-
-    mapping(address => bool) invoices;
-    mapping(address => bool) companies;
-
-    address[] invoicesList;
-    address[] companiesList;
-
-    event InvoiceCreated(address invoice);
-    event CompanyRegistered(address company);
-
-    // Add invoice to platform
-    function addInvoice(
-        address invoice) public {
-        invoices[invoice] = true;
-        invoicesList.push(invoice);
-
-        InvoiceCreated(invoice);
-    }
-
-    // List od all invoices
-    function listInvoices() public constant returns (address[]) {
-        return invoicesList;
-    }
-
-    // Create a new company
-    function createCompany(
-        string country,
-        string name,
-        string address1,
-        string address2,
-        string city,
-        uint postalCode) public returns (address) {
-        // Call a smart contract for company
-        address company = new Company(msg.sender, address(this), country, name, address1, address2, city, postalCode);
-
-        companies[company] = true;
-        companiesList.push(company);
-
-        CompanyRegistered(company);
-        return company;
-    }
-
-    // List of all registered companies
-    function listCompanies() public constant returns (address[]) {
-        return companiesList;
-    }
-
-    // kill the contract
-    function kill() public onlyOwner {
         selfdestruct(owner);
     }
 

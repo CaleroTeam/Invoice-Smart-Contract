@@ -15,8 +15,7 @@ contract Invoice {
     }
 
     struct InvoiceStruct {
-        address CaleroMain;
-
+        address caleroMain;
         address owner;
         address[] owners;
         uint invoiceId;
@@ -50,7 +49,7 @@ contract Invoice {
         uint _amountForPay,
         string _currency,
         string _messageToRecipient,
-        address CaleroMain) public {
+        address caleroMain) public {
         invoice.owner = _seller;
         invoice.owners.push(_seller);
         invoice.payer = _payer;
@@ -67,7 +66,7 @@ contract Invoice {
         invoice.messageToRecipient = _messageToRecipient;
 
         invoice.state = 0;
-        invoice.CaleroMain = CaleroMain;
+        invoice.caleroMain = caleroMain;
     }
 
     // Events
@@ -101,8 +100,7 @@ contract Invoice {
 
     // Actions
     function buyInvoice(address payer) public onlyBuyer(payer) payable {
-        require(invoice.state == 0);
-        // on pending
+        require(invoice.state == 0); // on pending
         require(invoice.payDueDate != 0);
 
         // The order's value must be equal to msg.value and must be more then 0
@@ -146,6 +144,10 @@ contract Invoice {
     // Getters
     function getOwner() public constant returns (address) {
         return invoice.owner;
+    }
+
+    function listOwners() public constant returns (address[]) {
+        return invoice.owners;
     }
 
     function getCustomer() public constant returns (address) {

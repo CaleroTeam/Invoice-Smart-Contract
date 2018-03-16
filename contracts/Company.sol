@@ -6,8 +6,7 @@ import "./Invoice.sol";
 contract Company {
 
     struct CompanyStruct {
-        address CaleroMain;
-
+        address caleroMain;
         string country;
         string name;
         string address1;
@@ -23,7 +22,7 @@ contract Company {
     // Constructor
     function Company(
         address owner,
-        address CaleroMain,
+        address caleroMain,
         string country,
         string name,
         string address1,
@@ -32,7 +31,7 @@ contract Company {
         uint postalCode) public {
         company.users[owner] = true;
         company.usersList.push(owner);
-        company.CaleroMain = CaleroMain;
+        company.caleroMain = caleroMain;
         company.country = country;
         company.name = name;
         company.address1 = address1;
@@ -65,7 +64,7 @@ contract Company {
         uint _amountForPay,
         string _currency,
         string _messageToRecipient)
-    public onlyOwner {
+    public onlyOwner returns (address) {
         InvoiceDetails memory invoiceDetails;
 
         invoiceDetails.seller = address(this);
@@ -79,15 +78,6 @@ contract Company {
         invoiceDetails.currency = _currency;
         invoiceDetails.messageToRecipient = _messageToRecipient;
 
-        createInvoiceCall(invoiceDetails);
-    }
-
-    modifier onlyOwner() {
-        require(isOwner(msg.sender));
-        _;
-    }
-
-    function createInvoiceCall(InvoiceDetails invoiceDetails) private returns (address) {
         address invoice = new Invoice(
             invoiceDetails.seller,
             invoiceDetails.payer,
@@ -99,13 +89,19 @@ contract Company {
             invoiceDetails.amountForPay,
             invoiceDetails.currency,
             invoiceDetails.messageToRecipient,
-            company.CaleroMain);
+            company.caleroMain);
 
-        CaleroMain calero = CaleroMain(company.CaleroMain);
+        CaleroMain calero = CaleroMain(company.caleroMain);
         calero.addInvoice(invoice);
 
         return invoice;
     }
+
+    modifier onlyOwner() {
+        require(isOwner(msg.sender));
+        _;
+    }
+
 
     // Add new owner to Company
     function addOwner(address user) public onlyOwner {
