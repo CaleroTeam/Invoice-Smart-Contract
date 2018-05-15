@@ -1,33 +1,68 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
+/**
+* @title Ownable
+* @dev The Ownable contract has an owner address, and provides basic authorization control
+* functions, this simplifies the implementation of "user permissions".
+*/
 contract Ownable {
+  address public owner;
+  address public backEnd;
 
-    address public owner;
-    address public newOwner;
+  event OwnershipRenounced(address indexed previousOwner);
+  event BackEndUserAdded(address indexed backEndAddress);
+  event OwnershipTransferred(
+    address indexed previousOwner,
+    address indexed newOwner
+  );
 
-    event OwnerUpdate(address _prevOwner, address _newOwner);
 
-    modifier onlyOwner {
-        require(msg.sender == owner);
-        _;
-    }
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  constructor() public {
+    owner = msg.sender;
+  }
 
-    function Ownable() public {
-        owner = msg.sender;
-    }
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+  
+   /**
+   * @dev Throws if called by any account other than the backend User.
+   */
+  modifier onlyBackEnd() {
+    require(msg.sender == backEnd);
+    _;
+  }
 
-    // Transfers ownership
-    function transferOwnership(address _newOwner) public onlyOwner {
-        require(_newOwner != owner);
-        newOwner = _newOwner;
-    }
 
-    // Accepts transferred ownership
-    function acceptOwnership() public {
-        require(msg.sender == newOwner);
-        OwnerUpdate(owner, newOwner);
-        owner = newOwner;
-        newOwner = 0x0;
-    }
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) public onlyOwner {
+    require(newOwner != address(0));
+    emit OwnershipTransferred(owner, newOwner);
+    owner = newOwner;
+  }
 
+  function setBackEndUser(address backEndUser) public onlyOwner {
+    require(backEndUser != address(0));
+    emit BackEndUserAdded(backEndUser);
+    backEnd = backEndUser;
+  }
+
+  /**
+   * @dev Allows the current owner to relinquish control of the contract.
+   */
+  function renounceOwnership() public onlyOwner {
+    emit OwnershipRenounced(owner);
+    owner = address(0);
+  }
 }
